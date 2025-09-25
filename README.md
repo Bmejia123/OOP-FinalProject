@@ -1,5 +1,4 @@
-# pythonFantasyCardGame
-Python Based Fantasy Card game
+# Python Fantasy Card Game
 
 Team Members:
 Bernardo
