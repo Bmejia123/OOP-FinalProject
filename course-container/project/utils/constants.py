@@ -1,0 +1,5 @@
+#constants
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
