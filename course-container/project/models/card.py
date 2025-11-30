@@ -29,11 +29,31 @@ class Card:
 
 # attackCard class
 class AttackCard(Card):
-    def __init__(self, name, cost, damage, image_path):
+    def __init__(self, name, cost, damage, image_path, effect=None):   # effect=None is new
         super().__init__(name, cost, "attack", image_path)
         self.damage = damage
+        #self.effect = effect 
 
     def play(self, target, caster):
+        """
+        if self.name == "Bow&Arrow":
+            target.effects.append({"type": "dot", "value": self.damage, "turns": 3})
+            print(f"{target.name} will take {self.damage} damage for 3 turns!")
+        if self.name == "SnakeBite":
+            target.effects.append({"type": "dot", "value": self.damage, "turns": 3})
+            print(f"{target.name} will take {self.damage} damage for 3 turns!")
+        if self.name == "Fireball":
+            target.effects.append({"type": "dot", "value": self.damage, "turns": 3})
+            print(f"{target.name} will take {self.damage} damage for 3 turns!") 
+            
+        if self.effect == "stun":
+            self.apply_stun(target)
+    def apply_stun(self, target):
+        import random
+        if random.random() < 0.5:
+            target.effects.append({"type": "stun", "turns": 1, "value": None})
+            print(f"{target.name} is stunned and will skip their next turn!")
+        """
         total_damage = self.damage + getattr(caster, "attack_boost", 0)
         target.take_damage(total_damage)
 
@@ -50,6 +70,14 @@ class DefenseCard(Card):
         elif self.name == "Vortex":
             caster.effects.append({"type": "block", "value": self.block, "turns": 3})
             print(f"{caster.name} gains {self.block} block for 3 turns (Vortex).")
+        """
+        elif self.name == "Reflect":
+            caster.effects.append({"type": "reflect", "value": "full", "turns": 1})
+            print(f"{caster.name} will reflect the next attack!") 
+        elif self.name == "Dodge":
+            caster.effects.append({"type": "dodge", "value": 0.5, "turns": 2})
+            print(f"{caster.name} has a 50% chance to dodge for 2 turns!")
+        """
         else:
             caster.add_block(self.block)
 
@@ -63,6 +91,16 @@ class SupportCard(Card):
         self.duration = duration
 
     def play(self, target, caster):
+        """
+        if self.name == "YouthPotion":
+            caster.health = min(caster.max_health, caster.health + 25)
+            print(f"{caster.name} heals 25 HP!")
+            caster.effects.append({"type": "regen", "value": 5, "turns": 3})
+            print(f"{caster.name} will regenerate 5 HP for 3 turns.")
+        elif self.name == "TimeSkip":
+            caster.effects.append({"type": "extra_turn", "value": 1, "turns": 1})
+            print(f"{caster.name} will act twice on their next turn!")
+        """
         if self.heal > 0:
             caster.health = min(caster.max_health, caster.health + self.heal)
             print(f"{caster.name} heals {self.heal} HP. Health: {caster.health}")

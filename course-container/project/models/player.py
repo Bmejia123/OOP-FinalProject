@@ -15,10 +15,19 @@ class Player:
         self.block = 0
         self.negate_next_damage = False  # forcefield effect
         self.attack_boost = 0
-        self.effects = []  # multitun effects here
+        self.effects = ["stun"]  # multitun effects here
         self.latest_card_drawn = None  #track the most recently drawn card
 
     def start_turn(self):
+        """
+        if any(e["type"] == "stun" for e in self.effects):
+            print(f"{self.name} is stunned and loses their turn!")
+            for e in self.effects:
+                if e["type"] == "stun":
+                    e["turns"] -= 1
+            self.effects = [e for e in self.effects if e["turns"] > 0]
+            return
+            """
         block_from_effects = sum(e["value"] for e in self.effects if e["type"] == "block")
         self.block = min(block_from_effects, MAX_BLOCK)
 
