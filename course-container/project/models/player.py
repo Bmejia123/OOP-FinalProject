@@ -1,7 +1,8 @@
-#models/player.py
+# models/player.py
 from models.deck import Deck
+import random
 
-MAX_BLOCK = 50  #cap for block
+MAX_BLOCK = 50  # cap for block
 
 class Player:
     def __init__(self, name):
@@ -13,47 +14,102 @@ class Player:
         self.deck = Deck()
         self.hand = [self.deck.draw_card() for _ in range(3)]
         self.block = 0
-        self.negate_next_damage = False  # forcefield effect
-        self.attack_boost = 0
-        self.effects = ["stun"]  # multitun effects here
-        self.latest_card_drawn = None  #track the most recently drawn card
 
+        # status flags / effects
+        self.negate_next_damage = False  # forcefield effect card
+        self.attack_boost = 0
+        self.effects = []  # list of effect dicts
+        self.latest_card_drawn = None
+        self.skip_turn = False
+        self.extra_turns = 0
+
+  #start turn process effects
     def start_turn(self):
-        """
-        if any(e["type"] == "stun" for e in self.effects):
-            print(f"{self.name} is stunned and loses their turn!")
-            for e in self.effects:
-                if e["type"] == "stun":
-                    e["turns"] -= 1
-            self.effects = [e for e in self.effects if e["turns"] > 0]
-            return
-            """
-        block_from_effects = sum(e["value"] for e in self.effects if e["type"] == "block")
+
+        #apply block from vortex style effects
+        block_from_effects = sum(
+            e.get("value", 0) 
+            for e in self.effects 
+            if e.get("type") == "block"
+        )
         self.block = min(block_from_effects, MAX_BLOCK)
 
+        #dot + regenerate
+        for e in self.effects:
+            if e.get("type") == "dot":
+                self.take_damage(e.get("value", 0))
+
+            elif e.get("type") == "regen":
+                self.health = min(self.max_health, self.health + e.get("value", 0))
+                print(f"{self.name} regenerates {e['value']} HP. Health: {self.health}")
+
+        #skip turn for (stun card)
+        self.skip_turn = any(e.get("type") == "stun" for e in self.effects)
+
+        # extra turns for timeskip
+        self.extra_turns = sum(
+            e.get("value", 0)
+            for e in self.effects
+            if e.get("type") == "extra_turn"
+        )
+
+        # Decrement turns
         for e in self.effects:
             e["turns"] -= 1
+
+        #we need to handle expired boosts here and remove them when they are over/expired
+        expired_boosts = [e for e in self.effects if e["turns"] == 0 and e.get("type") == "boost"]
+        for e in expired_boosts:
+            self.attack_boost -= e.get("value", 0)
+            if self.attack_boost < 0:
+                self.attack_boost = 0
+
+        #remove those expired effects here 
         self.effects = [e for e in self.effects if e["turns"] > 0]
 
-    def take_damage(self, amount):
+   #damage logic for block/reflect/dodge etc
+    def take_damage(self, amount, attacker=None):
+        #forcefield regation
         if self.negate_next_damage:
             print(f"{self.name}'s ForceField negates the damage!")
             self.negate_next_damage = False
             return
 
-        damage_taken = max(0, amount - self.block)
-        self.block = max(0, self.block - amount)
+        #dodge effect
+        dodge_effect = next((e for e in self.effects if e.get("type") == "dodge"), None)
+        if dodge_effect:
+            if random.random() < dodge_effect.get("value", 0):
+                print(f"{self.name} dodges the attack!")
+                return
+
+        #reflect effect
+        reflect_effect = next((e for e in self.effects if e.get("type") == "reflect"), None)
+        if reflect_effect and attacker:
+            print(f"{self.name} reflects the attack back to {attacker.name}!")
+            attacker.take_damage(amount)
+
+            # remove the reflect effect after expired 
+            self.effects = [e for e in self.effects if e is not reflect_effect]
+            return
+
+        # block math etc 
+        blocked = min(self.block, amount)
+        self.block -= blocked
+        damage_taken = amount - blocked
         self.health -= damage_taken
+
         print(f"{self.name} takes {damage_taken} damage. Health: {self.health}")
 
+    #block math when we gain block
     def add_block(self, amount):
         self.block = min(self.block + amount, MAX_BLOCK)
         print(f"{self.name} gains {amount} block. Current block: {self.block}")
 
+   #drawing cards
     def draw_card(self):
         card = self.deck.draw_card()
         if card:
             self.hand.append(card)
-            self.latest_card_drawn = card  # mark it asdrawn the latest 
-        return card  # <-- return the card, not self
+            self.latest_card_drawn = card
+        return card
 

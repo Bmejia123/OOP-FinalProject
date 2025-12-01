@@ -3,22 +3,40 @@ import pygame
 import os
 from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 
-# loading assets
-ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
-BOARD_BG = pygame.image.load(os.path.join(ASSETS_DIR, "board/board.jpg"))
-BOARD_BG = pygame.transform.scale(BOARD_BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
-BACK_CARD_IMG = pygame.image.load(os.path.join(ASSETS_DIR, "Back_Card.png"))
-BACK_CARD_IMG = pygame.transform.scale(BACK_CARD_IMG, (120, 160))
-
-#bars
-BAR_WIDTH, BAR_HEIGHT = 300, 40
-BLACK_BAR = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_DIR, "statusBars/BlackBar.png")), (BAR_WIDTH, BAR_HEIGHT))
-RED_BAR = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_DIR, "statusBars/RedBar.png")), (BAR_WIDTH, BAR_HEIGHT))
-BLUE_BAR = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_DIR, "statusBars/BlueBar.png")), (BAR_WIDTH, BAR_HEIGHT))
-NAMEPLATE_IMG = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_DIR, "statusBars/namePlate.png")), (200, 80))
+END_TURN_WIDTH, END_TURN_HEIGHT = 150, 50
 CARD_WIDTH, CARD_HEIGHT = 120, 160
 CARD_SPACING = 20
-FONT_PATH = os.path.join(ASSETS_DIR, "etc/font.otf")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # game/
+PROJECT_DIR = os.path.dirname(BASE_DIR)               # project root
+ASSETS_DIR = os.path.join(PROJECT_DIR, "assets")
+
+#Loading assets
+BOARD_BG = pygame.image.load(os.path.join(ASSETS_DIR, "board", "board.jpg"))
+BOARD_BG = pygame.transform.scale(BOARD_BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+BACK_CARD_IMG = pygame.image.load(os.path.join(ASSETS_DIR, "Back_Card.png"))
+BACK_CARD_IMG = pygame.transform.scale(BACK_CARD_IMG, (CARD_WIDTH, CARD_HEIGHT))
+
+# Status bars
+BAR_WIDTH, BAR_HEIGHT = 300, 40
+BLACK_BAR = pygame.transform.scale(
+    pygame.image.load(os.path.join(ASSETS_DIR, "statusBars", "BlackBar.png")), (BAR_WIDTH, BAR_HEIGHT)
+)
+RED_BAR = pygame.transform.scale(
+    pygame.image.load(os.path.join(ASSETS_DIR, "statusBars", "RedBar.png")), (BAR_WIDTH, BAR_HEIGHT)
+)
+BLUE_BAR = pygame.transform.scale(
+    pygame.image.load(os.path.join(ASSETS_DIR, "statusBars", "BlueBar.png")), (BAR_WIDTH, BAR_HEIGHT)
+)
+NAMEPLATE_IMG = pygame.transform.scale(
+    pygame.image.load(os.path.join(ASSETS_DIR, "statusBars", "namePlate.png")), (200, 80)
+)
+
+#custom font 
+FONT_PATH = os.path.join(ASSETS_DIR, "etc", "font.otf")
+
+
 
 def draw_bar(screen, x, y, current_value, max_value, bar_foreground):
     screen.blit(BLACK_BAR, (x, y))
@@ -28,11 +46,22 @@ def draw_bar(screen, x, y, current_value, max_value, bar_foreground):
         filled_bar = bar_foreground.subsurface((0, 0, filled_width, BAR_HEIGHT))
         screen.blit(filled_bar, (x, y))
 
+
+def draw_end_turn_button(screen):
+    font = pygame.font.Font(FONT_PATH, 24)
+    rect = pygame.Rect(SCREEN_WIDTH - END_TURN_WIDTH - 50, SCREEN_HEIGHT // 2 - END_TURN_HEIGHT // 2, END_TURN_WIDTH, END_TURN_HEIGHT)
+    pygame.draw.rect(screen, (50, 50, 50), rect)
+    text_surf = font.render("End Turn", True, WHITE)
+    text_rect = text_surf.get_rect(center=rect.center)
+    screen.blit(text_surf, text_rect)
+    return rect  # return the rect so we can check clicks
+
 def draw_game(screen, players, current_turn):
     screen.blit(BOARD_BG, (0, 0))
     name_font = pygame.font.Font(FONT_PATH, 24)
     card_font = pygame.font.Font(FONT_PATH, 16)
     effect_font = pygame.font.Font(FONT_PATH, 14)
+    value_font = pygame.font.Font(FONT_PATH, 20)  # font for numeric values
 
     hovered_card = None
     mouse_pos = pygame.mouse.get_pos()
@@ -43,7 +72,13 @@ def draw_game(screen, players, current_turn):
 
         #drawing health and mana bars on screen
         draw_bar(screen, 50, bar_y_offset, player.health, player.max_health, RED_BAR)
+        health_text = value_font.render(f"{player.health}/{player.max_health}", True, WHITE)
+        screen.blit(health_text, (50 + BAR_WIDTH + 10, bar_y_offset + (BAR_HEIGHT - health_text.get_height()) // 2))
+
+        #drawing nameplates and player names
         draw_bar(screen, 50, bar_y_offset + 40, player.mana, player.max_mana, BLUE_BAR)
+        mana_text = value_font.render(f"{player.mana}/{player.max_mana}", True, WHITE)
+        screen.blit(mana_text, (50 + BAR_WIDTH + 10, bar_y_offset + 40 + (BAR_HEIGHT - mana_text.get_height()) // 2))
 
         #drawing nameplates and player names
         nameplate_x, nameplate_y = 35, bar_y_offset - 60 if is_top else bar_y_offset + 60
@@ -104,3 +139,6 @@ def draw_game(screen, players, current_turn):
         zoom_image = pygame.transform.scale(hovered_card.image, (zoom_width, zoom_height))
         pygame.draw.rect(screen, (255, 255, 0), (zoom_x-3, zoom_y-3, zoom_width+6, zoom_height+6), 3)
         screen.blit(zoom_image, (zoom_x, zoom_y))
+
+    end_turn_rect = draw_end_turn_button(screen)
+    return end_turn_rect  # modify draw_game to return this rect
