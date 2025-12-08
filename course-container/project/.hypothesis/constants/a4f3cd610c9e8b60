@@ -1,0 +1,4 @@
+# file: C:\Users\berna\Desktop\oop-finalproject\OOP-FinalProject\course-container\project\models\player.py
+# hypothesis_version: 6.148.7
+
+[100, 'block', 'boost', 'dodge', 'dot', 'extra_turn', 'negate_next_damage', 'reflect', 'regen', 'stun', 'turns', 'type', 'value']

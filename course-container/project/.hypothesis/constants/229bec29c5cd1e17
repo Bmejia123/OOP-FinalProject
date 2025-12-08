@@ -1,0 +1,4 @@
+# file: C:\Users\berna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\pygame\surfarray.py
+# hypothesis_version: 6.148.7
+
+['2', '3', 'A', 'B', 'C', 'G', 'R', 'array2d', 'array3d', 'array_alpha', 'array_blue', 'array_colorkey', 'array_green', 'array_red', 'array_to_surface', 'blit_array', 'get_arraytype', 'get_arraytypes', 'invalid array type', 'make_surface', 'map_array', 'numpy', 'pixels2d', 'pixels3d', 'pixels_alpha', 'pixels_blue', 'pixels_green', 'pixels_red', 'surface_to_array', 'use_arraytype']

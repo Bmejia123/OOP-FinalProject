@@ -69,36 +69,45 @@ class Player:
 
    #damage logic for block/reflect/dodge etc
     def take_damage(self, amount, attacker=None):
-        #forcefield regation
-        if self.negate_next_damage:
+        import random
+
+        # Forcefield negation
+        if getattr(self, "negate_next_damage", False):
             print(f"{self.name}'s ForceField negates the damage!")
             self.negate_next_damage = False
             return
 
-        #dodge effect
+        # Dodge effect
         dodge_effect = next((e for e in self.effects if e.get("type") == "dodge"), None)
         if dodge_effect:
             if random.random() < dodge_effect.get("value", 0):
                 print(f"{self.name} dodges the attack!")
+                # Remove dodge effect after used
+                self.effects = [e for e in self.effects if e is not dodge_effect]
                 return
 
-        #reflect effect
+        # Reflect effect
         reflect_effect = next((e for e in self.effects if e.get("type") == "reflect"), None)
         if reflect_effect and attacker:
             print(f"{self.name} reflects the attack back to {attacker.name}!")
             attacker.take_damage(amount)
-
-            # remove the reflect effect after expired 
+            # Remove the reflect effect after used
             self.effects = [e for e in self.effects if e is not reflect_effect]
             return
 
-        # block math etc 
+        # Block calculation
         blocked = min(self.block, amount)
         self.block -= blocked
         damage_taken = amount - blocked
         self.health -= damage_taken
 
+        # Ensure health never goes below 0
+        self.health = max(self.health, 0)
+
         print(f"{self.name} takes {damage_taken} damage. Health: {self.health}")
+
+
+
 
     #block math when we gain block
     def add_block(self, amount):
@@ -112,4 +121,3 @@ class Player:
             self.hand.append(card)
             self.latest_card_drawn = card
         return card
-

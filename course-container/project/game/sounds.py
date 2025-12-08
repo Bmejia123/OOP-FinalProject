@@ -44,7 +44,11 @@ for card_name, file_name in sound_files.items():
         print(f"Warning: Sound file '{file_name}' for card '{card_name}' not found in {SOUNDS_DIR}")
 
 def play_card_sound(card_name):
+    sfx_volume = getattr(pygame, "volume_settings", {}).get("sfx", 0.5)
+
     if card_name in sounds:
-        sounds[card_name].play()
+        sound = sounds[card_name]
+        sound.set_volume(sfx_volume)
+        sound.play()
     else:
         print(f"No sound assigned for card '{card_name}'")
